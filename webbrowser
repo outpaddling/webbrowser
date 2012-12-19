@@ -1,0 +1,77 @@
+#!/bin/csh
+
+switch($#argv)
+case    0:
+    set args = "$argv"
+    breaksw
+default:
+    switch("$1")
+    case    "-h":
+    case    "--help":
+	echo "Usage: $0 [-h|--help]"
+	echo "       $0 [-b|--browsers 'browser-list'] [arguments]"
+	echo "NOTE: (browser-list must be quoted to separate it from arguments)"
+	echo ""
+	echo "Example:"
+	echo "  $0 -b 'konqueror ephipany lynx' http://www.google.com"
+	exit 0
+	breaksw
+    case    "-b":
+    case    "--browsers":
+	set browsers = ($2)
+	set url = "$argv[3]"
+	breaksw
+    default:
+	set url = "$argv[1]"
+	breaksw
+    endsw
+endsw
+
+# If no browser list given on the command line, check the env
+if ( ! $?browsers ) then
+    if ( $?BESTBROWSERS ) then
+	set browsers = ($BESTBROWSERS)
+    else
+	# The order of the browsers here is an attempt to rank them in order
+	# of most likely to be an add-on.  The idea is to use the browser that
+	# a user chose to install over those included with the base system.
+	set browsers = ( \
+	    opera \
+	    arena \
+	    chimera \
+	    seamonkey \
+	    firefox \
+	    konqueror \
+	    epiphany \
+	    Safari \
+	    elinks \
+	    w3m \
+	    links \
+	    lynx )
+	if ( `uname` == 'Darwin' ) then
+	    # Mac OS X has an 'open' command that runs the default app
+	    # for a given argument.
+	    set browsers = (open $browsers)
+	endif
+    endif
+endif
+
+# Find a browser from the list
+foreach browser ( ${browsers} )
+    which ${browser} >& /dev/null
+    if ( $status == 0 ) then
+	echo ${browser} "${url}"
+	${browser} "${url}"
+	exit $status
+    endif
+end
+
+# Didn't find anything...
+echo "None of the following browsers were found on this system:"
+echo ""
+echo ${browsers}
+echo ""
+echo "Make sure at least on of these browsers is installed and your PATH is"
+echo "properly configured."
+exit 1
+
