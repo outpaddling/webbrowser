@@ -41,6 +41,7 @@ if ( ! $?browsers ) then
 	    chimera \
 	    seamonkey \
 	    firefox \
+	    chrome \
 	    konqueror \
 	    epiphany \
 	    Safari \
